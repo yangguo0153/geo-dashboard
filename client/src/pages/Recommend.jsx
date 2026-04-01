@@ -23,8 +23,16 @@ function Recommend() {
   const [data, setData] = useState(null)
   const [platformFilter, setPlatformFilter] = useState(null)
   const [tierFilter, setTierFilter] = useState(null)
+  const [wordRootFilter, setWordRootFilter] = useState(null)
   const { fetchApi, loading } = useApi()
   const contentRef = useRef(null)
+
+  // 获取词根列表
+  const getWordRoots = () => {
+    if (!data?.relevanceCards) return []
+    const roots = new Set(data.relevanceCards.map((c) => c.word_root).filter(Boolean))
+    return Array.from(roots).sort()
+  }
 
   useEffect(() => {
     if (month) {
@@ -38,15 +46,20 @@ function Recommend() {
     ? data.relevanceCards
         ?.filter((c) => (!platformFilter || c.platform === platformFilter))
         ?.filter((c) => (!tierFilter || c.tier === tierFilter))
+        ?.filter((c) => (!wordRootFilter || c.word_root === wordRootFilter))
         ?.sort((a, b) => (a.relevance || 0) - (b.relevance || 0)) || []
     : []
 
   const filteredDetail = data
-    ? data.detail?.filter((d) => (!platformFilter || d.platform === platformFilter)) || []
+    ? data.detail?.filter((d) => (!platformFilter || d.platform === platformFilter))
+        ?.filter((d) => (!tierFilter || d.tier === tierFilter))
+        ?.filter((d) => (!wordRootFilter || d.word_root === wordRootFilter)) || []
     : []
 
   const filteredSettlement = data
-    ? data.settlementSummary?.filter((s) => (!platformFilter || s.platform === platformFilter)) || []
+    ? data.settlementSummary?.filter((s) => (!platformFilter || s.platform === platformFilter))
+        ?.filter((s) => (!tierFilter || s.tier === tierFilter))
+        ?.filter((s) => (!wordRootFilter || s.word_root === wordRootFilter)) || []
     : []
 
   const detailColumns = [
@@ -100,6 +113,13 @@ function Recommend() {
             onChange={setPlatformFilter}
             style={{ width: 120 }}
             options={PLATFORM_NAMES.map((p) => ({ value: p, label: p }))}
+          />
+          <Select
+            placeholder="词根"
+            allowClear
+            onChange={setWordRootFilter}
+            style={{ width: 150 }}
+            options={getWordRoots().map((r) => ({ value: r, label: r }))}
           />
           <Select
             placeholder="词包级别"

@@ -18,7 +18,7 @@ export default function Settlement() {
 
   useEffect(() => {
     if (month) {
-      fetchApi(`/settlement?month=${month}`)
+      fetchApi(`/api/settlement?month=${month}`)
         .then(setData)
         .catch(() => setData(null));
     }

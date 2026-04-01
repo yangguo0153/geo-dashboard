@@ -96,6 +96,7 @@ export default function CompareDetail() {
                 data={filteredSettlement}
                 rateField="favorRate"
                 rateLabel="偏向智己占比"
+                showTier={false}
               />
             </div>
           </>

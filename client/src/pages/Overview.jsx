@@ -7,6 +7,7 @@ import KpiCard from '../components/KpiCard'
 import MonthPicker from '../components/MonthPicker'
 import FileUpload from '../components/FileUpload'
 import ScreenshotButton from '../components/ScreenshotButton'
+import ExportButton from '../components/ExportButton'
 import { useApi } from '../hooks/useApi'
 import { useAuth } from '../hooks/useAuth'
 import { EMPTY_MESSAGES } from '../utils/constants'
@@ -186,22 +187,14 @@ function Overview() {
     }
   }
 
-  // Radar chart for keyword type coverage
+  // Radar chart for three-tier keyword compliance rates
   const getRadarOption = () => {
     if (!data?.summary) return null
 
-    const totalKeywords = data.summary.totalKeywords || 0
-    const recommendTotal = data.summary.recommend?.total || 0
-    const compareTotal = data.summary.compare?.total || 0
-    const sentimentTotal = data.summary.sentiment?.total || 0
-
-    // Calculate coverage percentages
-    const recommendCoverage = totalKeywords > 0 ?
-      ((recommendTotal / totalKeywords) * 100).toFixed(1) : 0
-    const compareCoverage = totalKeywords > 0 ?
-      ((compareTotal / totalKeywords) * 100).toFixed(1) : 0
-    const sentimentCoverage = totalKeywords > 0 ?
-      ((sentimentTotal / totalKeywords) * 100).toFixed(1) : 0
+    // Get actual compliance rates from summary data
+    const recommendRate = data.summary.recommend?.exposureRate || 0
+    const compareRate = data.summary.compare?.favorRate || 0
+    const sentimentRate = data.summary.sentiment?.positiveRate || 0
 
     return {
       tooltip: {
@@ -210,15 +203,15 @@ function Overview() {
         textStyle: { color: '#f8fafc' },
       },
       legend: {
-        data: ['关键词类型覆盖'],
+        data: ['三类词达标率'],
         textStyle: { color: '#94a3b8' },
         top: 10,
       },
       radar: {
         indicator: [
-          { name: '推荐词', max: 100 },
-          { name: '对比词', max: 100 },
-          { name: '舆情词', max: 100 },
+          { name: '推荐词达标率', max: 100 },
+          { name: '对比词达标率', max: 100 },
+          { name: '舆情词达标率', max: 100 },
         ],
         axisName: { color: '#94a3b8' },
         splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } },
@@ -227,17 +220,147 @@ function Overview() {
       },
       series: [
         {
-          name: '关键词类型覆盖',
+          name: '三类词达标率',
           type: 'radar',
           data: [
             {
-              value: [parseFloat(recommendCoverage), parseFloat(compareCoverage), parseFloat(sentimentCoverage)],
-              name: '关键词类型覆盖',
+              value: [recommendRate, compareRate, sentimentRate],
+              name: '三类词达标率',
               areaStyle: { color: 'rgba(0, 212, 255, 0.3)' },
               lineStyle: { color: '#00d4ff' },
               itemStyle: { color: '#00d4ff' },
             },
           ],
+        },
+      ],
+    }
+  }
+
+  // Trend line chart for monthly pass rates (past 6 months)
+  const getTrendLineOption = () => {
+    if (!data?.summary) return null
+
+    // Generate past 6 months labels
+    const currentMonth = dayjs(month)
+    const months = []
+    for (let i = 5; i >= 0; i--) {
+      months.push(currentMonth.subtract(i, 'month').format('YYYY-MM'))
+    }
+
+    // TODO: When backend supports historical data via /api/overview?months=6
+    // For now, use current month data as placeholder
+    const recommendRate = parseFloat(data.summary.recommend?.exposureRate) || 0
+    const compareRate = parseFloat(data.summary.compare?.favorRate) || 0
+    const sentimentRate = parseFloat(data.summary.sentiment?.positiveRate) || 0
+
+    // Placeholder: use current data for all months
+    // Backend should return array of monthly data in the future
+    const recommendData = Array(6).fill(recommendRate)
+    const compareData = Array(6).fill(compareRate)
+    const sentimentData = Array(6).fill(sentimentRate)
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: '#1a2332',
+        borderColor: '#334155',
+        textStyle: { color: '#f8fafc' },
+        formatter: (params) => {
+          let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0].axisValue}</div>`
+          params.forEach(param => {
+            result += `<div style="display: flex; justify-content: space-between; gap: 24px;">
+              <span>${param.marker} ${param.seriesName}</span>
+              <span style="font-weight: bold;">${param.value}%</span>
+            </div>`
+          })
+          return result
+        },
+      },
+      legend: {
+        data: ['推荐词露出率', '对比词偏向率', '舆情词正面率'],
+        textStyle: { color: '#94a3b8' },
+        top: 10,
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        data: months,
+        axisLabel: { color: '#94a3b8' },
+        axisLine: { lineStyle: { color: '#334155' } },
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: 100,
+        axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+        axisLine: { lineStyle: { color: '#334155' } },
+        splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } },
+      },
+      series: [
+        {
+          name: '推荐词露出率',
+          type: 'line',
+          data: recommendData,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { color: '#00d4ff', width: 2 },
+          itemStyle: { color: '#00d4ff' },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(0, 212, 255, 0.3)' },
+                { offset: 1, color: 'rgba(0, 212, 255, 0.05)' },
+              ],
+            },
+          },
+        },
+        {
+          name: '对比词偏向率',
+          type: 'line',
+          data: compareData,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { color: '#10b981', width: 2 },
+          itemStyle: { color: '#10b981' },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                { offset: 1, color: 'rgba(16, 185, 129, 0.05)' },
+              ],
+            },
+          },
+        },
+        {
+          name: '舆情词正面率',
+          type: 'line',
+          data: sentimentData,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { color: '#6366f1', width: 2 },
+          itemStyle: { color: '#6366f1' },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(99, 102, 241, 0.3)' },
+                { offset: 1, color: 'rgba(99, 102, 241, 0.05)' },
+              ],
+            },
+          },
         },
       ],
     }
@@ -329,6 +452,7 @@ function Overview() {
         <div className="upload-section">
           <MonthPicker value={month} onChange={setMonth} />
           {isAdmin && <FileUpload month={month} onSuccess={handleUploadSuccess} />}
+          <ExportButton data={data} month={month} />
           <ScreenshotButton targetRef={containerRef} filename={`overview-${month}`} />
         </div>
       </div>
@@ -364,7 +488,7 @@ function Overview() {
 
         {/* Radar Chart */}
         <div className="chart-card">
-          <div className="chart-title">关键词类型覆盖</div>
+          <div className="chart-title">三类词达标率</div>
           {getRadarOption() ? (
             <ReactECharts
               option={getRadarOption()}
@@ -375,6 +499,20 @@ function Overview() {
             <Empty description={EMPTY_MESSAGES.NO_DATA} />
           )}
         </div>
+      </div>
+
+      {/* Monthly Trend Line Chart */}
+      <div className="chart-card" style={{ marginTop: 24 }}>
+        <div className="chart-title">月度达标率趋势</div>
+        {getTrendLineOption() ? (
+          <ReactECharts
+            option={getTrendLineOption()}
+            style={{ height: 300 }}
+            notMerge={true}
+          />
+        ) : (
+          <Empty description={EMPTY_MESSAGES.NO_DATA} />
+        )}
       </div>
 
       {/* Tier Distribution Summary */}

@@ -4,6 +4,7 @@ import {
   calcCompareSettlement,
   calcSentimentSettlement,
   calcRelevance,
+  relevanceToTier,
 } from "../server/services/settlementCalc.js";
 
 describe("Relevance calculation", () => {
@@ -21,6 +22,28 @@ describe("Relevance calculation", () => {
 
   test("product_fit=5, natural_rate=50 → 60%", () => {
     expect(calcRelevance(5, 50)).toBeCloseTo(60, 1);
+  });
+});
+
+describe("relevanceToTier", () => {
+  test("relevance <= 30 → 一级", () => {
+    expect(relevanceToTier(10)).toBe("一级");
+    expect(relevanceToTier(30)).toBe("一级");
+  });
+
+  test("relevance > 30 and <= 50 → 二级", () => {
+    expect(relevanceToTier(31)).toBe("二级");
+    expect(relevanceToTier(50)).toBe("二级");
+  });
+
+  test("relevance > 50 and <= 60 → 三级", () => {
+    expect(relevanceToTier(51)).toBe("三级");
+    expect(relevanceToTier(60)).toBe("三级");
+  });
+
+  test("relevance > 60 → 三级", () => {
+    expect(relevanceToTier(61)).toBe("三级");
+    expect(relevanceToTier(100)).toBe("三级");
   });
 });
 

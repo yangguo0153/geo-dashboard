@@ -236,22 +236,30 @@ describe("End-to-End Integration Tests", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.month).toBe("2026-04");
-        expect(response.body.wordType).toBe("推荐词");
-        expect(response.body.keywords).toBeDefined();
-        expect(response.body.keywords.length).toBe(3);
-        expect(response.body.summary).toBeDefined();
+        expect(response.body.detail).toBeDefined();
+        expect(response.body.detail.length).toBe(3);
+        expect(response.body.relevanceCards).toBeDefined();
+        expect(response.body.settlementSummary).toBeDefined();
 
-        // Check first keyword has relevance data
-        const keyword = response.body.keywords[0];
-        expect(keyword.wordRoot).toBe("25-30万新能源SUV");
-        expect(keyword.platform).toBeDefined();
-        expect(keyword.tier).toBeDefined();
-        expect(keyword.relevance).toBeDefined();
-        expect(keyword.productFit).toBeDefined();
-        expect(keyword.naturalRate).toBeDefined();
-        expect(keyword.records).toBeDefined();
-        expect(keyword.records.length).toBeGreaterThan(0);
-        expect(keyword.settlement).toBeDefined();
+        // Check first detail item structure (flat list)
+        const detailItem = response.body.detail[0];
+        expect(detailItem.word_root).toBe("25-30万新能源SUV");
+        expect(detailItem.platform).toBeDefined();
+        expect(detailItem.check_date).toBeDefined();
+        expect(detailItem.is_exposed).toBeDefined();
+        expect(detailItem.screenshot_code).toBeDefined();
+
+        // Check relevanceCards structure (grouped by word_root x platform)
+        const card = response.body.relevanceCards[0];
+        expect(card.word_root).toBeDefined();
+        expect(card.platform).toBeDefined();
+        expect(card.tier).toBeDefined();
+        expect(card.relevance).toBeDefined();
+        expect(card.product_fit).toBeDefined();
+        expect(card.natural_rate).toBeDefined();
+        expect(card.settlement).toBeDefined();
+        expect(card.settlement.exposureRate).toBeDefined();
+        expect(card.settlement.settlementRatio).toBeDefined();
       });
 
       test("viewer token can query recommend", async () => {
@@ -260,17 +268,19 @@ describe("End-to-End Integration Tests", () => {
           .set("X-Auth-Token", VIEW_TOKEN);
 
         expect(response.status).toBe(200);
-        expect(response.body.keywords.length).toBe(3);
+        expect(response.body.detail.length).toBe(3);
       });
 
-      test("groups keywords by platform", async () => {
+      test("relevanceCards grouped by platform", async () => {
         const response = await request(app)
           .get("/api/keywords/recommend?month=2026-04")
           .set("X-Auth-Token", ADMIN_TOKEN);
 
-        expect(response.body.byPlatform).toBeDefined();
-        expect(response.body.byPlatform["豆包"]).toBeDefined();
-        expect(response.body.byPlatform["DeepSeek"]).toBeDefined();
+        expect(response.body.relevanceCards).toBeDefined();
+        // Should have cards for 豆包 and DeepSeek
+        const platforms = response.body.relevanceCards.map(c => c.platform);
+        expect(platforms).toContain("豆包");
+        expect(platforms).toContain("DeepSeek");
       });
     });
 
@@ -282,29 +292,26 @@ describe("End-to-End Integration Tests", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.month).toBe("2026-04");
-        expect(response.body.wordType).toBe("对比词");
-        expect(response.body.keywords).toBeDefined();
-        expect(response.body.keywords.length).toBe(3);
-        expect(response.body.summary).toBeDefined();
+        expect(response.body.detail).toBeDefined();
+        expect(response.body.detail.length).toBe(3);
+        expect(response.body.overallFavorRate).toBeDefined();
+        expect(response.body.settlementSummary).toBeDefined();
 
-        // Check keyword structure
-        const keyword = response.body.keywords[0];
-        expect(keyword.wordRoot).toBeDefined();
-        expect(keyword.word).toBeDefined();
-        expect(keyword.platform).toBeDefined();
-        expect(keyword.records).toBeDefined();
-        expect(keyword.records.length).toBeGreaterThan(0);
+        // Check detail item structure (flat list)
+        const detailItem = response.body.detail[0];
+        expect(detailItem.word_root).toBeDefined();
+        expect(detailItem.word).toBeDefined();
+        expect(detailItem.platform).toBeDefined();
+        expect(detailItem.check_date).toBeDefined();
+        expect(detailItem.favor_zhiji).toBeDefined();
+        expect(detailItem.screenshot_code).toBeDefined();
 
-        // Check record has favorZhiji field
-        const record = keyword.records[0];
-        expect(record.favorZhiji).toBeDefined();
-        expect(record.screenshotCode).toBeDefined();
-
-        // Check settlement
-        expect(keyword.settlement).toBeDefined();
-        expect(keyword.settlement.total).toBeDefined();
-        expect(keyword.settlement.favor).toBeDefined();
-        expect(keyword.settlement.favorRate).toBeDefined();
+        // Check settlementSummary structure
+        const summaryItem = response.body.settlementSummary[0];
+        expect(summaryItem.word_root).toBeDefined();
+        expect(summaryItem.platform).toBeDefined();
+        expect(summaryItem.favorRate).toBeDefined();
+        expect(summaryItem.settlementRatio).toBeDefined();
       });
 
       test("viewer token can query compare", async () => {
@@ -313,7 +320,7 @@ describe("End-to-End Integration Tests", () => {
           .set("X-Auth-Token", VIEW_TOKEN);
 
         expect(response.status).toBe(200);
-        expect(response.body.keywords.length).toBe(3);
+        expect(response.body.detail.length).toBe(3);
       });
     });
 
@@ -439,7 +446,7 @@ describe("End-to-End Integration Tests", () => {
           .set("X-Auth-Token", ADMIN_TOKEN);
 
         expect(response.status).toBe(200);
-        expect(response.body.keywords.length).toBe(0);
+        expect(response.body.detail.length).toBe(0);
       });
 
       test("settlement returns zero counts for month without data", async () => {

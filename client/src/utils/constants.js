@@ -1,35 +1,32 @@
-// Platform configurations
+// Platform configurations (AI 搜索平台)
 export const PLATFORMS = {
-  DOUYIN: { id: 'douyin', name: '抖音', color: '#000000' },
-  KUAISHOU: { id: 'kuaishou', name: '快手', color: '#FF4906' },
-  BILIBILI: { id: 'bilibili', name: 'B站', color: '#00A1D6' },
-  XIAOHONGSHU: { id: 'xiaohongshu', name: '小红书', color: '#FF2442' },
-  WEIBO: { id: 'weibo', name: '微博', color: '#E6162D' },
+  DOUBAO: { id: 'doubaobao', name: '豆包', color: '#00d4ff' },
+  QIANWEN: { id: 'qianwen', name: '千问', color: '#6366f1' },
+  DEEPSEEK: { id: 'deepseek', name: 'DeepSeek', color: '#10b981' },
+  YUANBAO: { id: 'yuanbao', name: '元宝', color: '#f59e0b' },
 }
 
 // Platform list for dropdowns
 export const PLATFORM_LIST = Object.values(PLATFORMS)
 
-// Account tier colors
+// 词包级别颜色
 export const TIER_COLORS = {
-  S: '#ef4444', // Red
-  A: '#f59e0b', // Amber
-  B: '#10b981', // Emerald
-  C: '#6366f1', // Indigo
-  D: '#94a3b8', // Slate
+  '一级': '#ef4444', // Red - 最难，关联度 ≤30%
+  '二级': '#f59e0b', // Amber - 中等，关联度 30%-50%
+  '三级': '#10b981', // Emerald - 较易，关联度 50%-60%
+  '品牌技术': '#6366f1', // Indigo - 舆情词专用
 }
 
-// Account tier labels
+// 词包级别标签
 export const TIER_LABELS = {
-  S: 'S级',
-  A: 'A级',
-  B: 'B级',
-  C: 'C级',
-  D: 'D级',
+  '一级': '一级词包',
+  '二级': '二级词包',
+  '三级': '三级词包',
+  '品牌技术': '品牌技术词包',
 }
 
-// Tier values list for dropdowns
-export const TIER_LIST = ['S', 'A', 'B', 'C', 'D']
+// 级别列表用于下拉选择
+export const TIER_LIST = ['一级', '二级', '三级', '品牌技术']
 
 // Platform names list for dropdowns
 export const PLATFORM_NAMES = Object.values(PLATFORMS).map(p => p.name)
