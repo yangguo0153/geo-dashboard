@@ -1,5 +1,6 @@
 import React from "react";
 import { Table, Tag } from "antd";
+import { TIER_COLORS, TIER_LABELS } from "../utils/constants";
 
 function getSettlementColor(ratio) {
   if (ratio >= 1) return "settlement-full";
@@ -22,7 +23,11 @@ export default function SettlementSummary({ data, rateField, rateLabel }) {
       dataIndex: "tier",
       key: "tier",
       width: 100,
-      render: (tier) => <Tag>{tier}</Tag>,
+      render: (tier) => (
+        <Tag color={TIER_COLORS[tier] || "default"}>
+          {TIER_LABELS[tier] || tier}
+        </Tag>
+      ),
     },
     {
       title: rateLabel,
