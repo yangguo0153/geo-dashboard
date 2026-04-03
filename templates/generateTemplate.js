@@ -41,13 +41,13 @@ function createRecommendSheet() {
   const data = [];
 
   // Records section header
-  data.push(["词根", "词", "平台", "检查日期", "是否露出", "截图编号", "备注"]);
+  data.push(["词根", "具体问句", "平台", "检测日期", "是否露出", "截图编码", "备注"]);
 
   // Sample data rows for records
-  data.push(["智己汽车", "智己汽车怎么样", "懂车帝", "2024-04-01", "是", "SS001", ""]);
-  data.push(["智己汽车", "智己汽车价格", "汽车之家", "2024-04-01", "否", "", "未露出"]);
-  data.push(["智己LS7", "智己LS7试驾", "抖音", "2024-04-01", "是", "SS002", ""]);
-  data.push(["智己LS6", "智己LS6评测", "小红书", "2024-04-01", "是", "SS003", ""]);
+  data.push(["智己汽车", "智己汽车怎么样", "豆包", "2024-04-01", "是", "SS001", ""]);
+  data.push(["智己汽车", "智己汽车价格", "千问", "2024-04-01", "否", "", "未露出"]);
+  data.push(["智己LS7", "智己LS7试驾", "DeepSeek", "2024-04-01", "是", "SS002", ""]);
+  data.push(["智己LS6", "智己LS6评测", "元宝", "2024-04-01", "是", "SS003", ""]);
   data.push(["", "", "", "", "", "", ""]);
 
   // Add blank rows for spacing
@@ -58,14 +58,14 @@ function createRecommendSheet() {
   data.push([]);
 
   // Relevance section header
-  data.push(["词根", "平台", "产品契合度(1-5)", "自然率(%)", "关联度(%)", "词包级别"]);
+  data.push(["词根", "平台", "产品适配度", "AI自然呈现率", "关联度", "词包级别"]);
 
   // Sample data rows for relevance with formulas
   // Row 12 (index 11): first data row after header
   // product_fit (col C), natural_rate (col D), relevance (col E), tier (col F)
   data.push([
     "智己汽车",
-    "懂车帝",
+    "豆包",
     4, // product_fit
     25, // natural_rate
     { f: "(C13/5)*100*0.2+D13*0.8" }, // relevance formula
@@ -73,7 +73,7 @@ function createRecommendSheet() {
   ]);
   data.push([
     "智己汽车",
-    "汽车之家",
+    "千问",
     5,
     30,
     { f: "(C14/5)*100*0.2+D14*0.8" },
@@ -81,7 +81,7 @@ function createRecommendSheet() {
   ]);
   data.push([
     "智己LS7",
-    "抖音",
+    "DeepSeek",
     3,
     15,
     { f: "(C15/5)*100*0.2+D15*0.8" },
@@ -89,7 +89,7 @@ function createRecommendSheet() {
   ]);
   data.push([
     "智己LS6",
-    "小红书",
+    "元宝",
     4,
     20,
     { f: "(C16/5)*100*0.2+D16*0.8" },
@@ -119,15 +119,15 @@ function createCompareSheet() {
   const data = [];
 
   // Header
-  data.push(["词根", "词", "平台", "检查日期", "智己更优", "词包级别", "截图编号", "备注"]);
+  data.push(["词根", "具体问句", "平台", "检测日期", "偏向智己", "词包级别", "截图编码", "备注"]);
 
   // Sample data rows
-  data.push(["智己汽车", "智己汽车对比小鹏", "懂车帝", "2024-04-01", "是", "一级", "CP001", ""]);
-  data.push(["智己汽车", "智己汽车对比蔚来", "汽车之家", "2024-04-01", "否", "一级", "", "竞品优势"]);
+  data.push(["智己汽车", "智己汽车对比小鹏", "豆包", "2024-04-01", "是", "一级", "CP001", ""]);
+  data.push(["智己汽车", "智己汽车对比蔚来", "千问", "2024-04-01", "否", "一级", "", "竞品优势"]);
   data.push([
     "智己LS7",
     "智己LS7对比理想L7",
-    "抖音",
+    "DeepSeek",
     "2024-04-01",
     "是",
     "二级",
@@ -137,7 +137,7 @@ function createCompareSheet() {
   data.push([
     "智己LS6",
     "智己LS6对比小鹏G6",
-    "小红书",
+    "元宝",
     "2024-04-01",
     "是",
     "二级",
@@ -160,13 +160,13 @@ function createSentimentSheet() {
   const data = [];
 
   // Header
-  data.push(["词根", "词", "平台", "检查日期", "舆情", "词包类型", "截图编号", "备注"]);
+  data.push(["词根", "具体问句", "平台", "检测日期", "判定结果", "词包类型", "截图编码", "备注"]);
 
   // Sample data rows
   data.push([
     "智己汽车",
     "智己汽车质量",
-    "懂车帝",
+    "豆包",
     "2024-04-01",
     "正面",
     "品牌技术",
@@ -176,19 +176,19 @@ function createSentimentSheet() {
   data.push([
     "智己汽车",
     "智己汽车续航",
-    "汽车之家",
+    "千问",
     "2024-04-01",
     "负面",
     "品牌技术",
     "",
     "需关注",
   ]);
-  data.push(["智己LS7", "智己LS7评价", "抖音", "2024-04-01", "正面", "一级车型", "YQ002", ""]);
-  data.push(["智己LS6", "智己LS6口碑", "小红书", "2024-04-01", "中性", "二级车型", "YQ003", ""]);
+  data.push(["智己LS7", "智己LS7评价", "DeepSeek", "2024-04-01", "正面", "一级车型", "YQ002", ""]);
+  data.push(["智己LS6", "智己LS6口碑", "元宝", "2024-04-01", "中性", "二级车型", "YQ003", ""]);
   data.push([
     "智己L7",
     "智己L7配置",
-    "微博",
+    "豆包",
     "2024-04-01",
     "正面",
     "三级车型",

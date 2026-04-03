@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import dayjs from 'dayjs';
 import { Spin, Empty } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import MonthPicker from "../components/MonthPicker";
@@ -8,13 +9,16 @@ import KpiCard from "../components/KpiCard";
 import { useApi } from "../hooks/useApi";
 
 export default function Settlement() {
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
   const [data, setData] = useState(null);
   const { fetchApi, loading } = useApi();
   const contentRef = useRef(null);
+
+  const sentimentSummaryData = (data?.sentiment || []).map((item) => ({
+    ...item,
+    word_root: item.tier,
+    platform: "汇总",
+  }));
 
   useEffect(() => {
     if (month) {
@@ -44,6 +48,7 @@ export default function Settlement() {
                 icon={<CheckCircleOutlined />}
                 label="整体考核通过率"
                 value={data.overallPassRate}
+                sub={data?.passSummary ? `达标 ${data.passSummary.passed} / 总计 ${data.passSummary.total}` : null}
               />
             </div>
 
@@ -69,13 +74,14 @@ export default function Settlement() {
               </div>
             )}
 
-            {data.sentiment?.length > 0 && (
+            {sentimentSummaryData.length > 0 && (
               <div className="table-section" style={{ marginBottom: 32 }}>
                 <h3 className="chart-title">舆情词结算</h3>
                 <SettlementSummary
-                  data={data.sentiment}
+                  data={sentimentSummaryData}
                   rateField="positiveRate"
                   rateLabel="正面回答占比"
+                  showTier={false}
                 />
               </div>
             )}

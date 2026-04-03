@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { message } from 'antd'
 import { useAuth } from './useAuth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 /**
  * Hook for API operations with authentication
@@ -110,7 +110,6 @@ export function useApi() {
       }
 
       const data = await response.json()
-      message.success('上传成功')
       return data
 
     } catch (err) {

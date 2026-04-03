@@ -13,9 +13,9 @@ export default function FileUpload({ month, onSuccess }) {
     }
 
     try {
-      const result = await uploadFile(file, month);
+      const result = await uploadFile("/api/upload", file);
       message.success(
-        `上传成功：推荐词 ${result.recommend.records} 条，对比词 ${result.compare.records} 条，舆情词 ${result.sentiment.records} 条`
+        `已导入 ${result.month}：推荐词 ${result.counts?.recommend || 0} 条，对比词 ${result.counts?.compare || 0} 条，舆情词 ${result.counts?.sentiment || 0} 条`
       );
       if (onSuccess) onSuccess(result);
     } catch (error) {

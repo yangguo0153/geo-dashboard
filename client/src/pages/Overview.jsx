@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Typography, Empty, Spin } from 'antd'
+import { Typography, Empty, Spin, Progress } from 'antd'
 import { StarOutlined, SwapOutlined, AlertOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import ReactECharts from 'echarts-for-react'
 import dayjs from 'dayjs'
@@ -54,62 +54,78 @@ function Overview() {
   }, [month, get])
 
   // Handle upload success - refresh data
-  const handleUploadSuccess = () => {
-    if (month) {
+  const handleUploadSuccess = (result) => {
+    const nextMonth = result?.month || month
+    if (nextMonth && nextMonth !== month) {
+      setMonth(nextMonth)
+      return
+    }
+
+    if (nextMonth) {
       // Refetch data after successful upload
-      get(`/api/overview?month=${month}`)
+      get(`/api/overview?month=${nextMonth}`)
         .then(setData)
         .catch(console.error)
     }
-  }
-
-  // Calculate overall pass rate from tier distribution
-  const calculatePassRate = (tierDistribution) => {
-    if (!tierDistribution) return null
-    const total = tierDistribution['一级']?.count +
-                  tierDistribution['二级']?.count +
-                  tierDistribution['三级']?.count || 0
-    if (total === 0) return null
-    const passed = tierDistribution['一级']?.count || 0
-    return ((passed / total) * 100).toFixed(1)
   }
 
   // KPI cards data
   const kpiData = data?.summary ? [
     {
       key: 'recommend',
-      icon: <StarOutlined style={{ color: '#00d4ff' }} />,
+      icon: <StarOutlined style={{ color: '#2563eb' }} />,
       label: '推荐词露出率',
       value: data.summary.recommend?.exposureRate,
       sub: `${data.summary.recommend?.exposed || 0}/${data.summary.recommend?.total || 0} 条露出`,
+      threshold: 80,
     },
     {
       key: 'compare',
-      icon: <SwapOutlined style={{ color: '#10b981' }} />,
+      icon: <SwapOutlined style={{ color: '#16a34a' }} />,
       label: '对比词偏向智己占比',
       value: data.summary.compare?.favorRate,
       sub: `${data.summary.compare?.favor || 0}/${data.summary.compare?.total || 0} 条偏向`,
+      threshold: 70,
     },
     {
       key: 'sentiment',
-      icon: <AlertOutlined style={{ color: '#6366f1' }} />,
+      icon: <AlertOutlined style={{ color: '#d97706' }} />,
       label: '舆情词正面占比',
       value: data.summary.sentiment?.positiveRate,
       sub: `${data.summary.sentiment?.positive || 0}/${data.summary.sentiment?.total || 0} 条正面`,
+      threshold: 60,
     },
     {
       key: 'pass',
-      icon: <CheckCircleOutlined style={{ color: '#f59e0b' }} />,
+      icon: <CheckCircleOutlined style={{ color: '#2563eb' }} />,
       label: '整体考核通过率',
-      value: calculatePassRate(data?.tierDistribution),
-      sub: data?.tierDistribution ?
-        `一级 ${data.tierDistribution['一级']?.count || 0} / 总计 ${
-          (data.tierDistribution['一级']?.count || 0) +
-          (data.tierDistribution['二级']?.count || 0) +
-          (data.tierDistribution['三级']?.count || 0)
-        }` : null,
+      value: data.overallPassRate,
+      sub: data?.passSummary
+        ? `达标 ${data.passSummary.passed || 0} / 总计 ${data.passSummary.total || 0}`
+        : null,
+      threshold: null,
     },
   ] : []
+
+  // 页面头部（所有状态共用）
+  const pageHeader = (
+    <div className="dashboard-header" style={{ marginBottom: 24 }}>
+      <div>
+        <Title level={4} style={{ margin: 0 }}>
+          数据总览
+        </Title>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
+          {data ? `考核月份: ${month} | 关键词总数: ${data?.summary?.totalKeywords || 0}` : (month ? `考核月份: ${month}` : '')}
+        </div>
+      </div>
+      <div className="upload-section">
+        <MonthPicker value={month} onChange={setMonth} />
+        {isAdmin && <FileUpload month={month} onSuccess={handleUploadSuccess} />}
+        {data && <ExportButton targetRef={containerRef} month={month} />}
+        <ScreenshotButton targetRef={containerRef} filename={`overview-${month}`} />
+      </div>
+    </div>
+  )
 
   // Platform bar chart options
   const getPlatformBarOption = () => {
@@ -133,13 +149,13 @@ function Overview() {
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        backgroundColor: '#1a2332',
-        borderColor: '#334155',
-        textStyle: { color: '#f8fafc' },
+        backgroundColor: '#ffffff',
+        borderColor: '#e5e7eb',
+        textStyle: { color: '#1f2937' },
       },
       legend: {
         data: ['露出率', '偏向率', '正面率'],
-        textStyle: { color: '#94a3b8' },
+        textStyle: { color: '#6b7280' },
         top: 10,
       },
       grid: {
@@ -151,36 +167,36 @@ function Overview() {
       xAxis: {
         type: 'category',
         data: platforms,
-        axisLabel: { color: '#94a3b8' },
-        axisLine: { lineStyle: { color: '#334155' } },
+        axisLabel: { color: '#6b7280' },
+        axisLine: { lineStyle: { color: '#e5e7eb' } },
       },
       yAxis: {
         type: 'value',
         max: 100,
-        axisLabel: { color: '#94a3b8', formatter: '{value}%' },
-        axisLine: { lineStyle: { color: '#334155' } },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } },
+        axisLabel: { color: '#6b7280', formatter: '{value}%' },
+        axisLine: { lineStyle: { color: '#e5e7eb' } },
+        splitLine: { lineStyle: { color: '#f3f4f6' } },
       },
       series: [
         {
           name: '露出率',
           type: 'bar',
           data: exposureRates,
-          itemStyle: { color: '#00d4ff' },
+          itemStyle: { color: '#2563eb' },
           barWidth: '20%',
         },
         {
           name: '偏向率',
           type: 'bar',
           data: favorRates,
-          itemStyle: { color: '#10b981' },
+          itemStyle: { color: '#16a34a' },
           barWidth: '20%',
         },
         {
           name: '正面率',
           type: 'bar',
           data: positiveRates,
-          itemStyle: { color: '#6366f1' },
+          itemStyle: { color: '#d97706' },
           barWidth: '20%',
         },
       ],
@@ -198,13 +214,13 @@ function Overview() {
 
     return {
       tooltip: {
-        backgroundColor: '#1a2332',
-        borderColor: '#334155',
-        textStyle: { color: '#f8fafc' },
+        backgroundColor: '#ffffff',
+        borderColor: '#e5e7eb',
+        textStyle: { color: '#1f2937' },
       },
       legend: {
         data: ['三类词达标率'],
-        textStyle: { color: '#94a3b8' },
+        textStyle: { color: '#6b7280' },
         top: 10,
       },
       radar: {
@@ -213,10 +229,10 @@ function Overview() {
           { name: '对比词达标率', max: 100 },
           { name: '舆情词达标率', max: 100 },
         ],
-        axisName: { color: '#94a3b8' },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } },
-        splitArea: { areaStyle: { color: ['#1a2332', '#111827'] } },
-        axisLine: { lineStyle: { color: '#334155' } },
+        axisName: { color: '#6b7280' },
+        splitLine: { lineStyle: { color: '#e5e7eb' } },
+        splitArea: { areaStyle: { color: ['#f8faff', '#f0f2ff'] } },
+        axisLine: { lineStyle: { color: '#e5e7eb' } },
       },
       series: [
         {
@@ -226,141 +242,11 @@ function Overview() {
             {
               value: [recommendRate, compareRate, sentimentRate],
               name: '三类词达标率',
-              areaStyle: { color: 'rgba(0, 212, 255, 0.3)' },
-              lineStyle: { color: '#00d4ff' },
-              itemStyle: { color: '#00d4ff' },
+              areaStyle: { color: 'rgba(37, 99, 235, 0.2)' },
+              lineStyle: { color: '#2563eb' },
+              itemStyle: { color: '#2563eb' },
             },
           ],
-        },
-      ],
-    }
-  }
-
-  // Trend line chart for monthly pass rates (past 6 months)
-  const getTrendLineOption = () => {
-    if (!data?.summary) return null
-
-    // Generate past 6 months labels
-    const currentMonth = dayjs(month)
-    const months = []
-    for (let i = 5; i >= 0; i--) {
-      months.push(currentMonth.subtract(i, 'month').format('YYYY-MM'))
-    }
-
-    // TODO: When backend supports historical data via /api/overview?months=6
-    // For now, use current month data as placeholder
-    const recommendRate = parseFloat(data.summary.recommend?.exposureRate) || 0
-    const compareRate = parseFloat(data.summary.compare?.favorRate) || 0
-    const sentimentRate = parseFloat(data.summary.sentiment?.positiveRate) || 0
-
-    // Placeholder: use current data for all months
-    // Backend should return array of monthly data in the future
-    const recommendData = Array(6).fill(recommendRate)
-    const compareData = Array(6).fill(compareRate)
-    const sentimentData = Array(6).fill(sentimentRate)
-
-    return {
-      tooltip: {
-        trigger: 'axis',
-        backgroundColor: '#1a2332',
-        borderColor: '#334155',
-        textStyle: { color: '#f8fafc' },
-        formatter: (params) => {
-          let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0].axisValue}</div>`
-          params.forEach(param => {
-            result += `<div style="display: flex; justify-content: space-between; gap: 24px;">
-              <span>${param.marker} ${param.seriesName}</span>
-              <span style="font-weight: bold;">${param.value}%</span>
-            </div>`
-          })
-          return result
-        },
-      },
-      legend: {
-        data: ['推荐词露出率', '对比词偏向率', '舆情词正面率'],
-        textStyle: { color: '#94a3b8' },
-        top: 10,
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true,
-      },
-      xAxis: {
-        type: 'category',
-        data: months,
-        axisLabel: { color: '#94a3b8' },
-        axisLine: { lineStyle: { color: '#334155' } },
-      },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        max: 100,
-        axisLabel: { color: '#94a3b8', formatter: '{value}%' },
-        axisLine: { lineStyle: { color: '#334155' } },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } },
-      },
-      series: [
-        {
-          name: '推荐词露出率',
-          type: 'line',
-          data: recommendData,
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 8,
-          lineStyle: { color: '#00d4ff', width: 2 },
-          itemStyle: { color: '#00d4ff' },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(0, 212, 255, 0.3)' },
-                { offset: 1, color: 'rgba(0, 212, 255, 0.05)' },
-              ],
-            },
-          },
-        },
-        {
-          name: '对比词偏向率',
-          type: 'line',
-          data: compareData,
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 8,
-          lineStyle: { color: '#10b981', width: 2 },
-          itemStyle: { color: '#10b981' },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
-                { offset: 1, color: 'rgba(16, 185, 129, 0.05)' },
-              ],
-            },
-          },
-        },
-        {
-          name: '舆情词正面率',
-          type: 'line',
-          data: sentimentData,
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 8,
-          lineStyle: { color: '#6366f1', width: 2 },
-          itemStyle: { color: '#6366f1' },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(99, 102, 241, 0.3)' },
-                { offset: 1, color: 'rgba(99, 102, 241, 0.05)' },
-              ],
-            },
-          },
         },
       ],
     }
@@ -370,21 +256,7 @@ function Overview() {
   if (!loading && !error && !data) {
     return (
       <div ref={containerRef}>
-        <div className="dashboard-header" style={{ marginBottom: 24 }}>
-          <div>
-            <Title level={4} style={{ margin: 0, color: '#f8fafc' }}>
-              数据总览
-            </Title>
-            <div style={{ color: '#94a3b8', fontSize: 14, marginTop: 4 }}>
-              {month && `考核月份: ${month}`}
-            </div>
-          </div>
-          <div className="upload-section">
-            <MonthPicker value={month} onChange={setMonth} />
-            {isAdmin && <FileUpload month={month} onSuccess={handleUploadSuccess} />}
-            <ScreenshotButton targetRef={containerRef} filename="overview" />
-          </div>
-        </div>
+        {pageHeader}
 
         <Empty
           description={EMPTY_MESSAGES.NO_DATA}
@@ -412,17 +284,7 @@ function Overview() {
   if (error) {
     return (
       <div ref={containerRef}>
-        <div className="dashboard-header" style={{ marginBottom: 24 }}>
-          <div>
-            <Title level={4} style={{ margin: 0, color: '#f8fafc' }}>
-              数据总览
-            </Title>
-          </div>
-          <div className="upload-section">
-            <MonthPicker value={month} onChange={setMonth} />
-            {isAdmin && <FileUpload month={month} onSuccess={handleUploadSuccess} />}
-          </div>
-        </div>
+        {pageHeader}
 
         <Empty
           description={EMPTY_MESSAGES.ERROR}
@@ -440,32 +302,18 @@ function Overview() {
   return (
     <div ref={containerRef}>
       {/* Header with controls */}
-      <div className="dashboard-header" style={{ marginBottom: 24 }}>
-        <div>
-          <Title level={4} style={{ margin: 0, color: '#f8fafc' }}>
-            数据总览
-          </Title>
-          <div style={{ color: '#94a3b8', fontSize: 14, marginTop: 4 }}>
-            考核月份: {month} | 关键词总数: {data?.summary?.totalKeywords || 0}
-          </div>
-        </div>
-        <div className="upload-section">
-          <MonthPicker value={month} onChange={setMonth} />
-          {isAdmin && <FileUpload month={month} onSuccess={handleUploadSuccess} />}
-          <ExportButton data={data} month={month} />
-          <ScreenshotButton targetRef={containerRef} filename={`overview-${month}`} />
-        </div>
-      </div>
+      {pageHeader}
 
       {/* KPI Cards */}
       <div className="kpi-row">
-        {kpiData.map((kpi, index) => (
+        {kpiData.map((kpi) => (
           <KpiCard
             key={kpi.key}
             icon={kpi.icon}
             label={kpi.label}
             value={kpi.value}
             sub={kpi.sub}
+            threshold={kpi.threshold}
           />
         ))}
       </div>
@@ -501,54 +349,47 @@ function Overview() {
         </div>
       </div>
 
-      {/* Monthly Trend Line Chart */}
-      <div className="chart-card" style={{ marginTop: 24 }}>
-        <div className="chart-title">月度达标率趋势</div>
-        {getTrendLineOption() ? (
-          <ReactECharts
-            option={getTrendLineOption()}
-            style={{ height: 300 }}
-            notMerge={true}
-          />
-        ) : (
-          <Empty description={EMPTY_MESSAGES.NO_DATA} />
-        )}
+      {/* Monthly Trend Placeholder */}
+      <div className="chart-card" style={{ marginTop: 24, textAlign: 'center', padding: '32px 24px', color: 'var(--text-muted)' }}>
+        <div className="chart-title" style={{ justifyContent: 'center' }}>月度达标率趋势</div>
+        <div style={{ marginTop: 16, fontSize: 13 }}>历史趋势数据待接入（功能开发中）</div>
       </div>
 
       {/* Tier Distribution Summary */}
       {data?.tierDistribution && (
         <div className="chart-card" style={{ marginTop: 24 }}>
           <div className="chart-title">考核等级分布</div>
-          <div style={{ display: 'flex', gap: 24, padding: '20px 0' }}>
-            {['一级', '二级', '三级'].map(tier => {
-              const count = data.tierDistribution[tier]?.count || 0
-              const tierColors = {
-                '一级': '#10b981',
-                '二级': '#f59e0b',
-                '三级': '#ef4444',
-              }
-              return (
-                <div key={tier} style={{
-                  flex: 1,
-                  textAlign: 'center',
-                  padding: 20,
-                  background: 'var(--bg-secondary)',
-                  borderRadius: 12,
-                }}>
-                  <div style={{
-                    fontSize: 32,
-                    fontWeight: 700,
-                    color: tierColors[tier],
-                  }}>
-                    {count}
-                  </div>
-                  <div style={{ color: '#94a3b8', fontSize: 14, marginTop: 8 }}>
-                    {tier}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {(() => {
+            const total = (data.tierDistribution['一级']?.count || 0) +
+                          (data.tierDistribution['二级']?.count || 0) +
+                          (data.tierDistribution['三级']?.count || 0)
+            const tierColors = { '一级': '#dc2626', '二级': '#d97706', '三级': '#16a34a' }
+            const tierDesc = { '一级': '关联度 ≤30%', '二级': '关联度 30-50%', '三级': '关联度 50-60%' }
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 0' }}>
+                {['一级', '二级', '三级'].map(tier => {
+                  const count = data.tierDistribution[tier]?.count || 0
+                  const pct = total > 0 ? (count / total * 100) : 0
+                  const color = tierColors[tier]
+                  return (
+                    <div key={tier}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>
+                          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: color, marginRight: 8 }} />
+                          {tier}词包
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 8 }}>{tierDesc[tier]}</span>
+                        </span>
+                        <span style={{ fontWeight: 700, color }}>
+                          {count} 条 ({pct.toFixed(1)}%)
+                        </span>
+                      </div>
+                      <Progress percent={pct} size="small" strokeColor={color} showInfo={false} trailColor="#f3f4f6" />
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>

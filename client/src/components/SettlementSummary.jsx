@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Tag } from "antd";
+import { Table, Tag, Progress } from "antd";
 import { TIER_COLORS, TIER_LABELS } from "../utils/constants";
 
 function getSettlementColor(ratio, rateValue, rateField) {
@@ -45,14 +45,30 @@ export default function SettlementSummary({ data, rateField, rateLabel, showTier
     {
       title: rateLabel,
       key: "rate",
-      width: 120,
+      width: 180,
       render: (_, record) => {
         const rate = record[rateField];
-        const isPass = record.settlementRatio > 0;
+        let strokeColor;
+        if (rateField === 'exposureRate') {
+          strokeColor = rate >= 80 ? '#10b981' : '#ef4444';
+        } else if (record.settlementRatio >= 1) {
+          strokeColor = '#10b981';
+        } else if (record.settlementRatio > 0) {
+          strokeColor = '#f59e0b';
+        } else {
+          strokeColor = '#ef4444';
+        }
+
         return (
-          <span style={{ color: isPass ? "var(--accent-success)" : "var(--accent-danger)" }}>
-            {rate != null ? `${Number(rate).toFixed(1)}%` : "-"}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Progress
+              percent={rate != null ? Number(rate) : 0}
+              size="small"
+              strokeColor={strokeColor}
+              format={(percent) => rate != null ? `${percent.toFixed(1)}%` : '-'}
+              style={{ flex: 1, minWidth: 100 }}
+            />
+          </div>
         );
       },
     },

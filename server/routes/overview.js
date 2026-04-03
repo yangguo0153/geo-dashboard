@@ -3,7 +3,8 @@
  * GET /api/overview?month=YYYY-MM
  * Returns KPIs and platform statistics
  */
-import { calcRelevance, relevanceToTier } from "../services/settlementCalc.js";
+import { relevanceToTier } from "../services/settlementCalc.js";
+import { buildSettlementSummary } from "../services/settlementSummary.js";
 
 export default function createOverviewRouter(db) {
   const router = new Map();
@@ -61,7 +62,7 @@ export default function createOverviewRouter(db) {
       const recommendExposed = recommendRecords.filter((r) => r.is_exposed === 1).length;
       const recommendExposureRate =
         recommendRecords.length > 0
-          ? ((recommendExposed / recommendRecords.length) * 100).toFixed(1)
+          ? Math.round((recommendExposed / recommendRecords.length) * 100 * 10) / 10
           : 0;
 
       // Compare stats
@@ -71,7 +72,7 @@ export default function createOverviewRouter(db) {
       const compareFavor = compareRecords.filter((r) => r.favor_zhiji === 1).length;
       const compareFavorRate =
         compareRecords.length > 0
-          ? ((compareFavor / compareRecords.length) * 100).toFixed(1)
+          ? Math.round((compareFavor / compareRecords.length) * 100 * 10) / 10
           : 0;
 
       // Sentiment stats
@@ -81,8 +82,10 @@ export default function createOverviewRouter(db) {
       const sentimentPositive = sentimentRecords.filter((r) => r.sentiment === "正面").length;
       const sentimentPositiveRate =
         sentimentRecords.length > 0
-          ? ((sentimentPositive / sentimentRecords.length) * 100).toFixed(1)
+          ? Math.round((sentimentPositive / sentimentRecords.length) * 100 * 10) / 10
           : 0;
+
+      const { overallPassRate, passSummary } = buildSettlementSummary(keywords, records);
 
       // Platform statistics
       const platforms = ["豆包", "千问", "DeepSeek", "元宝"];
@@ -121,7 +124,7 @@ export default function createOverviewRouter(db) {
           tierDistribution[tier].keywords.push({
             word: keyword.word,
             wordRoot: keyword.word_root,
-            relevance: score.relevance.toFixed(1),
+            relevance: Math.round(score.relevance * 10) / 10,
           });
         }
       }
@@ -129,6 +132,8 @@ export default function createOverviewRouter(db) {
       // Response
       const overview = {
         month,
+        overallPassRate,
+        passSummary,
         summary: {
           totalKeywords: keywords.length,
           recommend: {

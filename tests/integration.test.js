@@ -198,6 +198,8 @@ describe("End-to-End Integration Tests", () => {
         expect(response.body.summary.recommend.total).toBe(3);
         expect(response.body.summary.compare).toBeDefined();
         expect(response.body.summary.sentiment).toBeDefined();
+        expect(response.body.overallPassRate).toBe(50);
+        expect(response.body.passSummary).toEqual({ passed: 3, total: 6 });
         expect(response.body.platformStats).toBeDefined();
         expect(response.body.platformStats.length).toBeGreaterThan(0);
       });
@@ -388,33 +390,28 @@ describe("End-to-End Integration Tests", () => {
         expect(response.status).toBe(200);
         expect(response.body.month).toBe("2026-04");
 
-        // Check recommend settlement
+        // Check overallPassRate
+        expect(response.body.overallPassRate).toBeDefined();
+        expect(response.body.passSummary).toEqual({ passed: 3, total: 6 });
+
+        // Check recommend settlement (array)
         expect(response.body.recommend).toBeDefined();
-        expect(response.body.recommend.totalKeywords).toBe(3);
-        expect(response.body.recommend.exposureRate).toBeDefined();
-        expect(response.body.recommend.settlementRatio).toBeDefined();
-        expect(response.body.recommend.settlementStatus).toBeDefined();
+        expect(Array.isArray(response.body.recommend)).toBe(true);
+        expect(response.body.recommend.length).toBeGreaterThan(0);
+        expect(response.body.recommend[0].word_root).toBeDefined();
+        expect(response.body.recommend[0].platform).toBeDefined();
+        expect(response.body.recommend[0].exposureRate).toBeDefined();
+        expect(response.body.recommend[0].settlementRatio).toBeDefined();
 
-        // Check compare settlement
+        // Check compare settlement (array)
         expect(response.body.compare).toBeDefined();
-        expect(response.body.compare.totalKeywords).toBe(3);
-        expect(response.body.compare.favorRate).toBeDefined();
-        expect(response.body.compare.settlementRatio).toBeDefined();
-        expect(response.body.compare.settlementStatus).toBeDefined();
+        expect(Array.isArray(response.body.compare)).toBe(true);
+        expect(response.body.compare.length).toBeGreaterThan(0);
 
-        // Check sentiment settlement
+        // Check sentiment settlement (array)
         expect(response.body.sentiment).toBeDefined();
-        expect(response.body.sentiment.totalKeywords).toBe(4);
-        expect(response.body.sentiment.positive).toBeDefined();
-        expect(response.body.sentiment.neutral).toBeDefined();
-        expect(response.body.sentiment.negative).toBeDefined();
-        expect(response.body.sentiment.byTier).toBeDefined();
-
-        // Check summary
-        expect(response.body.summary).toBeDefined();
-        expect(response.body.summary.allPassed).toBeDefined();
-        expect(response.body.summary.passedCount).toBeDefined();
-        expect(response.body.summary.totalCount).toBeDefined();
+        expect(Array.isArray(response.body.sentiment)).toBe(true);
+        expect(response.body.sentiment.length).toBeGreaterThan(0);
       });
 
       test("viewer token can query settlement", async () => {
@@ -423,9 +420,9 @@ describe("End-to-End Integration Tests", () => {
           .set("X-Auth-Token", VIEW_TOKEN);
 
         expect(response.status).toBe(200);
-        expect(response.body.recommend).toBeDefined();
-        expect(response.body.compare).toBeDefined();
-        expect(response.body.sentiment).toBeDefined();
+        expect(Array.isArray(response.body.recommend)).toBe(true);
+        expect(Array.isArray(response.body.compare)).toBe(true);
+        expect(Array.isArray(response.body.sentiment)).toBe(true);
       });
     });
 
@@ -449,15 +446,19 @@ describe("End-to-End Integration Tests", () => {
         expect(response.body.detail.length).toBe(0);
       });
 
-      test("settlement returns zero counts for month without data", async () => {
+      test("settlement returns empty arrays for month without data", async () => {
         const response = await request(app)
           .get("/api/settlement?month=2025-01")
           .set("X-Auth-Token", ADMIN_TOKEN);
 
         expect(response.status).toBe(200);
-        expect(response.body.recommend.totalKeywords).toBe(0);
-        expect(response.body.compare.totalKeywords).toBe(0);
-        expect(response.body.sentiment.totalKeywords).toBe(0);
+        expect(Array.isArray(response.body.recommend)).toBe(true);
+        expect(response.body.recommend.length).toBe(0);
+        expect(Array.isArray(response.body.compare)).toBe(true);
+        expect(response.body.compare.length).toBe(0);
+        expect(Array.isArray(response.body.sentiment)).toBe(true);
+        expect(response.body.sentiment.length).toBe(0);
+        expect(response.body.overallPassRate).toBe(0);
       });
     });
   });
