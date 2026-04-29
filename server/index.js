@@ -11,7 +11,7 @@ import createSettlementRouter from "./routes/settlement.js";
 import uploadRouter from "./routes/upload.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "../data/geo.db");
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, "../data/geo.db");
 const db = initDatabase(DB_PATH);
 
 const app = express();
