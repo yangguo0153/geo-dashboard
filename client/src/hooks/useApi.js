@@ -2,11 +2,9 @@ import { useState, useCallback } from 'react'
 import { message } from 'antd'
 import { useAuth } from './useAuth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-
 /**
  * Hook for API operations with authentication
- * Provides fetchApi and uploadFile methods
+ * All requests use relative paths (same-origin) — no base URL needed.
  */
 export function useApi() {
   const { getAuthHeader, token } = useAuth()
@@ -15,17 +13,10 @@ export function useApi() {
 
   /**
    * Make an authenticated API request
-   * @param {string} endpoint - API endpoint path
-   * @param {Object} options - Fetch options
-   * @returns {Promise<Object>} Response data
    */
   const fetchApi = useCallback(async (endpoint, options = {}) => {
     setLoading(true)
     setError(null)
-
-    const url = endpoint.startsWith('http')
-      ? endpoint
-      : `${API_BASE_URL}${endpoint}`
 
     const headers = {
       'Content-Type': 'application/json',
@@ -34,25 +25,21 @@ export function useApi() {
     }
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(endpoint, {
         ...options,
         headers,
       })
 
-      // Handle non-OK responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.message || errorData.detail || `HTTP ${response.status}`
+        const errorMessage = errorData.error || errorData.message || errorData.detail || `HTTP ${response.status}`
 
         if (response.status === 401) {
           message.error('登录已过期，请重新登录')
-          // Could trigger logout here
         } else if (response.status === 403) {
           message.error('无权限访问')
         } else if (response.status === 404) {
           message.error('资源不存在')
-        } else {
-          message.error(errorMessage)
         }
 
         throw new Error(errorMessage)
@@ -71,29 +58,20 @@ export function useApi() {
 
   /**
    * Upload a file to the API
-   * @param {string} endpoint - Upload endpoint path
-   * @param {File} file - File to upload
-   * @param {Object} additionalData - Additional form data
-   * @returns {Promise<Object>} Response data
    */
   const uploadFile = useCallback(async (endpoint, file, additionalData = {}) => {
     setLoading(true)
     setError(null)
 
-    const url = endpoint.startsWith('http')
-      ? endpoint
-      : `${API_BASE_URL}${endpoint}`
-
     const formData = new FormData()
     formData.append('file', file)
 
-    // Append additional data
     Object.entries(additionalData).forEach(([key, value]) => {
       formData.append(key, value)
     })
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           ...getAuthHeader(),
@@ -104,8 +82,7 @@ export function useApi() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.message || errorData.detail || `Upload failed: ${response.status}`
-        message.error(errorMessage)
+        const errorMessage = errorData.error || errorData.message || errorData.detail || `Upload failed: ${response.status}`
         throw new Error(errorMessage)
       }
 
@@ -138,9 +115,6 @@ export function useApi() {
     return fetchApi(url, { method: 'GET' })
   }, [fetchApi])
 
-  /**
-   * POST request helper
-   */
   const post = useCallback((endpoint, data = {}) => {
     return fetchApi(endpoint, {
       method: 'POST',
@@ -148,9 +122,6 @@ export function useApi() {
     })
   }, [fetchApi])
 
-  /**
-   * PUT request helper
-   */
   const put = useCallback((endpoint, data = {}) => {
     return fetchApi(endpoint, {
       method: 'PUT',
@@ -158,9 +129,6 @@ export function useApi() {
     })
   }, [fetchApi])
 
-  /**
-   * DELETE request helper
-   */
   const del = useCallback((endpoint) => {
     return fetchApi(endpoint, { method: 'DELETE' })
   }, [fetchApi])

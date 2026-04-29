@@ -10,10 +10,10 @@ import { parseUploadedXlsx } from "../services/xlsxParser.js";
 import { calcRelevance, relevanceToTier } from "../services/settlementCalc.js";
 import { requireAdmin } from "../middleware/auth.js";
 
-// Configure multer for file uploads
+// Configure multer for file uploads — use /tmp for temp files (works on all platforms incl. Fly.io)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), "uploads");
+    const uploadDir = "/tmp/geo-uploads";
     fs.mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },

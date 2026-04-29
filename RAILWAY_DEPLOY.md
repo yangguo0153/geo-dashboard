@@ -1,4 +1,14 @@
-# Railway 部署说明：智己 GEO 监测看板
+# ❌ Railway 部署说明（已废弃）
+
+**本项目最终部署在 Fly.io，不再使用 Railway。**
+
+原因：Railway 账户试用期结束，部署功能被暂停（`isVerified=false`，需升级计划）。
+
+最终部署信息请见 `CLAUDE.md` 或直接使用：
+- **地址**：https://geo-dashboard.fly.dev
+- **管理员**：`?token=geo-admin-2026`
+
+以下内容是 Railway 适配期间留下的记录，仅供参考，不再维护。
 
 目标：让同事不在 Windows 本机安装/编译依赖，直接通过 Railway 网址访问看板并上传 Excel 更新数据。
 

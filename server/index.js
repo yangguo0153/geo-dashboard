@@ -1,4 +1,5 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config(); // no-op if .env missing in production
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -36,6 +37,11 @@ app.get("/api/health", (_req, res) => {
 const apiRouter = express.Router();
 apiRouter.use(requireAuth);
 
+// Auth role check (returns current user's role)
+apiRouter.get("/auth/role", (req, res) => {
+  res.json({ role: req.authRole });
+});
+
 // Overview routes
 const overviewRouter = createOverviewRouter(db);
 apiRouter.get("/overview", (req, res) => {
@@ -70,6 +76,12 @@ app.use("/api/upload", uploadRouter(db));
 
 app.use("/api", apiRouter);
 
+// Global error handler — catch anything that slips through
+app.use((err, req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: err.message || "Internal server error" });
+});
+
 // SPA catch-all - serve index.html for client-side routing in production
 if (process.env.NODE_ENV === "production") {
   app.get("*", (_req, res) => {
@@ -77,8 +89,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`GEO Dashboard server running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`GEO Dashboard server running on 0.0.0.0:${PORT}`);
+  console.log(`DB_PATH: ${DB_PATH}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 });
 
 export default app;

@@ -35,10 +35,25 @@ export function useAuth() {
   })
 
   const [isAuthenticated, setIsAuthenticated] = useState(!!token)
+  const [role, setRole] = useState(null)
 
   // Update auth state when token changes
   useEffect(() => {
     setIsAuthenticated(!!token)
+  }, [token])
+
+  // Fetch role from server when token is available
+  useEffect(() => {
+    if (!token) {
+      setRole(null)
+      return
+    }
+    fetch(`/api/auth/role`, { headers: { 'X-Auth-Token': token } })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.role) setRole(data.role)
+      })
+      .catch(() => setRole(null))
   }, [token])
 
   // Save token to state and localStorage
@@ -69,6 +84,8 @@ export function useAuth() {
 
   return {
     token,
+    role,
+    isAdmin: role === 'admin',
     isAuthenticated,
     saveToken,
     clearToken,

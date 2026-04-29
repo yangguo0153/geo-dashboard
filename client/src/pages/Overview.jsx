@@ -25,11 +25,7 @@ function Overview() {
   const containerRef = useRef(null)
 
   const { get } = useApi()
-  const { token } = useAuth()
-
-  // Check if user is admin by comparing token
-  const isAdmin = token === import.meta.env.VITE_ADMIN_TOKEN ||
-                  localStorage.getItem('geo_dashboard_role') === 'admin'
+  const { isAdmin } = useAuth()
 
   // Fetch overview data when month changes
   useEffect(() => {
