@@ -1,36 +1,34 @@
 /* ============================================
-   GEO Dashboard - Premium Dark Theme
-   Design: Data-driven, Futuristic, High-tech
+   GEO Dashboard - Professional Light Theme
+   Design: Data-driven, Clean, Business
    ============================================ */
 
 :root {
-  /* Color Palette - Electric Blue Tech */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #111827;
-  --bg-card: #1a2332;
-  --bg-card-hover: #232f42;
+  /* Color Palette - Professional Blue */
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafbfc;
 
-  --accent-primary: #00d4ff;
-  --accent-secondary: #6366f1;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-  --accent-danger: #ef4444;
+  --accent-primary: #2563eb;
+  --accent-secondary: #3b82f6;
+  --accent-success: #16a34a;
+  --accent-warning: #d97706;
+  --accent-danger: #dc2626;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
 
-  --border-color: rgba(100, 116, 139, 0.2);
-  --glow-color: rgba(0, 212, 255, 0.15);
+  --border-color: #e5e7eb;
 
   /* Typography */
   --font-display: "DM Sans", sans-serif;
   --font-body: "Noto Sans SC", sans-serif;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 30px var(--glow-color);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 
   /* Transitions */
   --transition-fast: 0.15s ease;
@@ -52,21 +50,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Background Gradient Effect */
+/* Background */
 .dashboard-container {
   min-height: 100vh;
-  background:
-    radial-gradient(
-      ellipse at 0% 0%,
-      rgba(0, 212, 255, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 100% 100%,
-      rgba(99, 102, 241, 0.08) 0%,
-      transparent 50%
-    ),
-    var(--bg-primary);
+  background: var(--bg-primary);
 }
 
 /* Header */
@@ -80,21 +67,16 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 14, 23, 0.9);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .dashboard-title {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(
-    135deg,
-    var(--accent-primary),
-    var(--accent-secondary)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1f2937;
+  -webkit-text-fill-color: initial;
+  background: none;
 }
 
 .dashboard-subtitle {
@@ -111,11 +93,7 @@ body {
 }
 
 .upload-btn {
-  background: linear-gradient(
-    135deg,
-    var(--accent-primary),
-    var(--accent-secondary)
-  );
+  background: #2563eb;
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -126,12 +104,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .upload-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 /* Main Content */
@@ -145,8 +122,8 @@ body {
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .kpi-card {
@@ -166,19 +143,14 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--accent-primary),
-    var(--accent-secondary)
-  );
+  background: var(--accent-primary);
   opacity: 0;
   transition: var(--transition-normal);
 }
 
 .kpi-card:hover {
   background: var(--bg-card-hover);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--shadow-md);
 }
 
 .kpi-card:hover::before {
@@ -230,9 +202,9 @@ body {
 /* Charts Grid */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 2fr 1fr;
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .chart-card {
@@ -244,8 +216,7 @@ body {
 }
 
 .chart-card:hover {
-  border-color: rgba(0, 212, 255, 0.3);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--shadow-md);
 }
 
 .chart-title {
@@ -292,28 +263,6 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-/* Ant Design Overrides for Dark Theme */
-.ant-table {
-  background: transparent !important;
-}
-
-.ant-table-thead > tr > th {
-  background: var(--bg-secondary) !important;
-  color: var(--text-secondary) !important;
-  border-bottom: 1px solid var(--border-color) !important;
-  font-weight: 600;
-}
-
-.ant-table-tbody > tr > td {
-  background: transparent !important;
-  color: var(--text-primary) !important;
-  border-bottom: 1px solid var(--border-color) !important;
-}
-
-.ant-table-tbody > tr:hover > td {
-  background: var(--bg-card-hover) !important;
 }
 
 .ant-tag {
@@ -386,29 +335,6 @@ body {
   animation-delay: 0.4s;
 }
 
-/* Sidebar Styles */
-.ant-layout-sider {
-  background: var(--bg-secondary) !important;
-}
-
-.ant-layout-sider-trigger {
-  background: var(--bg-card) !important;
-}
-
-.ant-menu-light {
-  background: transparent !important;
-}
-
-.ant-menu-item {
-  margin: 4px 8px !important;
-  border-radius: 8px !important;
-}
-
-.ant-menu-item-selected {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
-  color: white !important;
-}
-
 /* Responsive */
 @media (max-width: 1200px) {
   .kpi-row {
@@ -457,38 +383,12 @@ body {
 
 .upload-zone:hover {
   border-color: var(--accent-primary);
-  background: rgba(0, 212, 255, 0.05);
+  background: rgba(37, 99, 235, 0.05);
 }
 
 .upload-zone.dragging {
   border-color: var(--accent-primary);
-  background: rgba(0, 212, 255, 0.1);
-}
-
-/* Tier Badge Colors */
-.tier-badge-s {
-  background: var(--accent-danger);
-  color: white;
-}
-
-.tier-badge-a {
-  background: var(--accent-warning);
-  color: white;
-}
-
-.tier-badge-b {
-  background: var(--accent-success);
-  color: white;
-}
-
-.tier-badge-c {
-  background: var(--accent-secondary);
-  color: white;
-}
-
-.tier-badge-d {
-  background: var(--text-muted);
-  color: white;
+  background: rgba(37, 99, 235, 0.1);
 }
 
 /* Platform Badge */
@@ -513,9 +413,7 @@ body {
 }
 
 .relevance-card:hover {
-  border-color: rgba(0, 212, 255, 0.3);
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .relevance-value {
@@ -526,17 +424,17 @@ body {
 
 /* Settlement Status Colors */
 .settlement-full {
-  color: var(--accent-success);
+  color: #16a34a;
   font-weight: 600;
 }
 
 .settlement-partial {
-  color: var(--accent-warning);
+  color: #d97706;
   font-weight: 600;
 }
 
 .settlement-fail {
-  color: var(--accent-danger);
+  color: #dc2626;
   font-weight: 600;
 }
 

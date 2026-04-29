@@ -307,7 +307,7 @@ export default function createKeywordsRouter(db) {
           settlement: {
             total: settlement.total,
             positive: settlement.positive,
-            positiveRate: settlement.positiveRate.toFixed(1),
+            positiveRate: Math.round(settlement.positiveRate * 10) / 10,
             settlementRatio: settlement.settlementRatio,
           },
         };

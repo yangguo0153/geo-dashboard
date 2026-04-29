@@ -8,20 +8,30 @@ const TOKEN_KEY = 'geo_dashboard_token'
  */
 export function useAuth() {
   const [token, setToken] = useState(() => {
-    // First check URL for token (from external auth)
+    // 1. 检查 URL
     const urlParams = new URLSearchParams(window.location.search)
     const urlToken = urlParams.get('token')
-
     if (urlToken) {
-      // Clean URL by removing token parameter
       const newUrl = window.location.pathname
       window.history.replaceState({}, '', newUrl)
       localStorage.setItem(TOKEN_KEY, urlToken)
       return urlToken
     }
 
-    // Fall back to localStorage
-    return localStorage.getItem(TOKEN_KEY) || null
+    // 2. 检查 localStorage
+    const storedToken = localStorage.getItem(TOKEN_KEY)
+    if (storedToken) return storedToken
+
+    // 3. 开发模式：使用默认 token
+    if (import.meta.env.DEV) {
+      const devToken = import.meta.env.VITE_ADMIN_TOKEN
+      if (devToken) {
+        localStorage.setItem(TOKEN_KEY, devToken)
+        return devToken
+      }
+    }
+
+    return null
   })
 
   const [isAuthenticated, setIsAuthenticated] = useState(!!token)

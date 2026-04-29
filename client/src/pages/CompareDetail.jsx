@@ -1,18 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Spin, Empty, Table, Tag, Select } from "antd";
+import dayjs from 'dayjs';
+import { Spin, Empty, Table, Tag, Tabs } from "antd";
 import { SwapOutlined } from "@ant-design/icons";
 import MonthPicker from "../components/MonthPicker";
 import ScreenshotButton from "../components/ScreenshotButton";
 import SettlementSummary from "../components/SettlementSummary";
 import KpiCard from "../components/KpiCard";
 import { useApi } from "../hooks/useApi";
-import { PLATFORM_LIST } from "../utils/constants";
+import { PLATFORMS } from "../utils/constants";
+
+// 平台 Tab 配置
+const platformTabs = [
+  { key: 'all', label: '全部' },
+  { key: PLATFORMS.DOUBAO.name, label: PLATFORMS.DOUBAO.name },
+  { key: PLATFORMS.QIANWEN.name, label: PLATFORMS.QIANWEN.name },
+  { key: PLATFORMS.DEEPSEEK.name, label: PLATFORMS.DEEPSEEK.name },
+  { key: PLATFORMS.YUANBAO.name, label: PLATFORMS.YUANBAO.name },
+]
 
 export default function CompareDetail() {
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [month, setMonth] = useState(dayjs().format('YYYY-MM'));
   const [data, setData] = useState(null);
   const [platformFilter, setPlatformFilter] = useState(null);
   const { fetchApi, loading } = useApi();
@@ -57,17 +64,18 @@ export default function CompareDetail() {
           <SwapOutlined /> 对比词详情
         </h1>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <Select
-            placeholder="平台"
-            allowClear
-            onChange={setPlatformFilter}
-            style={{ width: 120 }}
-            options={PLATFORM_LIST.map((p) => ({ value: p.id, label: p.name }))}
-          />
           <MonthPicker value={month} onChange={setMonth} />
           <ScreenshotButton targetRef={contentRef} filename="对比词详情" />
         </div>
       </div>
+
+      {/* 平台筛选 Tabs */}
+      <Tabs
+        activeKey={platformFilter || 'all'}
+        onChange={(key) => setPlatformFilter(key === 'all' ? null : key)}
+        items={platformTabs.map(t => ({ key: t.key, label: t.label }))}
+        style={{ marginBottom: 16 }}
+      />
 
       <Spin spinning={loading}>
         {data ? (

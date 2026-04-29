@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Card, Typography, Empty, Table, Tag, Select, Spin, message } from 'antd'
+import { Card, Typography, Empty, Table, Tag, Tabs, Spin, message } from 'antd'
 import { AlertOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
@@ -10,6 +10,15 @@ import SettlementSummary from '../components/SettlementSummary'
 import { useApi } from '../hooks/useApi'
 
 const { Title } = Typography
+
+// 平台 Tab 配置
+const platformTabs = [
+  { key: 'all', label: '全部' },
+  { key: '豆包', label: '豆包' },
+  { key: '千问', label: '千问' },
+  { key: 'DeepSeek', label: 'DeepSeek' },
+  { key: '元宝', label: '元宝' },
+]
 
 // Sentiment color mapping
 const SENTIMENT_COLORS = {
@@ -284,20 +293,13 @@ function Sentiment() {
         />
       </div>
 
-      {/* Platform Filter */}
-      <Card className="chart-card" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
-          <span style={{ color: 'var(--text-secondary)' }}>平台筛选:</span>
-          <Select
-            placeholder="全部平台"
-            value={platformFilter}
-            onChange={setPlatformFilter}
-            allowClear
-            style={{ width: 150 }}
-            options={getPlatforms().map(p => ({ label: p, value: p }))}
-          />
-        </div>
-      </Card>
+      {/* 平台筛选 Tabs */}
+      <Tabs
+        activeKey={platformFilter || 'all'}
+        onChange={(key) => setPlatformFilter(key === 'all' ? null : key)}
+        items={platformTabs.map(t => ({ key: t.key, label: t.label }))}
+        style={{ marginBottom: 16 }}
+      />
 
       {/* Settlement Summary */}
       {data?.byTier && Object.keys(data.byTier).length > 0 && (

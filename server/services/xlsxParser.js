@@ -1,5 +1,34 @@
 import XLSX from "xlsx";
 
+// 平台名称规范化
+const PLATFORM_ALIASES = {
+  "豆包": "豆包",
+  "千问": "千问",
+  "通义千问": "千问",
+  "DeepSeek": "DeepSeek",
+  "deepseek": "DeepSeek",
+  "元宝": "元宝",
+};
+
+function normalizePlatform(raw) {
+  const trimmed = raw?.trim();
+  return PLATFORM_ALIASES[trimmed] || trimmed;
+}
+
+// 词包类型规范化
+const TIER_TYPE_ALIASES = {
+  "品牌技术": "品牌技术",
+  "品牌/技术": "品牌技术",
+  "一级车型": "一级车型",
+  "二级车型": "二级车型",
+  "三级车型": "三级车型",
+};
+
+function normalizeTierType(raw) {
+  const trimmed = raw?.trim();
+  return TIER_TYPE_ALIASES[trimmed] || trimmed;
+}
+
 /**
  * Parse uploaded xlsx file with three sheets:
  * - 推荐词: monitoring records + relevance evaluation data
@@ -49,7 +78,7 @@ function parseRecommendSheet(workbook) {
     records.push({
       word_root: row[0] || "",
       word: row[1] || "",
-      platform: row[2] || "",
+      platform: normalizePlatform(row[2]),
       check_date: row[3] || "",
       is_exposed: row[4] === "是",
       screenshot_code: row[5] || "",
@@ -101,7 +130,7 @@ function parseCompareSheet(workbook) {
     records.push({
       word_root: row[0] || "",
       word: row[1] || "",
-      platform: row[2] || "",
+      platform: normalizePlatform(row[2]),
       check_date: row[3] || "",
       favor_zhiji: row[4] === "是",
       tier: row[5] || "",
@@ -133,10 +162,10 @@ function parseSentimentSheet(workbook) {
     records.push({
       word_root: row[0] || "",
       word: row[1] || "",
-      platform: row[2] || "",
+      platform: normalizePlatform(row[2]),
       check_date: row[3] || "",
       sentiment: row[4] || "",
-      tier_type: row[5] || "",
+      tier_type: normalizeTierType(row[5]),
       screenshot_code: row[6] || "",
       remark: row[7] || "",
     });

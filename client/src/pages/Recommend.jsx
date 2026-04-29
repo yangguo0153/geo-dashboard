@@ -1,12 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Spin, Empty, Table, Tag, Select } from 'antd'
+import dayjs from 'dayjs'
+import { Spin, Empty, Table, Tag, Tabs, Select } from 'antd'
 import { StarOutlined } from '@ant-design/icons'
 import MonthPicker from '../components/MonthPicker'
 import ScreenshotButton from '../components/ScreenshotButton'
 import RelevanceCard from '../components/RelevanceCard'
 import SettlementSummary from '../components/SettlementSummary'
 import { useApi } from '../hooks/useApi'
-import { PLATFORM_NAMES, TIER_COLORS, TIER_LABELS, TIER_LIST } from '../utils/constants'
+import { TIER_COLORS, TIER_LABELS, TIER_LIST } from '../utils/constants'
+
+// 平台 Tab 配置
+const platformTabs = [
+  { key: 'all', label: '全部' },
+  { key: '豆包', label: '豆包' },
+  { key: '千问', label: '千问' },
+  { key: 'DeepSeek', label: 'DeepSeek' },
+  { key: '元宝', label: '元宝' },
+]
 
 /**
  * Recommend Detail Page
@@ -16,10 +26,7 @@ import { PLATFORM_NAMES, TIER_COLORS, TIER_LABELS, TIER_LIST } from '../utils/co
  * - Settlement summary grouped by word_root x platform
  */
 function Recommend() {
-  const [month, setMonth] = useState(() => {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  })
+  const [month, setMonth] = useState(dayjs().format('YYYY-MM'))
   const [data, setData] = useState(null)
   const [platformFilter, setPlatformFilter] = useState(null)
   const [tierFilter, setTierFilter] = useState(null)
@@ -108,13 +115,6 @@ function Recommend() {
         </h1>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Select
-            placeholder="平台"
-            allowClear
-            onChange={setPlatformFilter}
-            style={{ width: 120 }}
-            options={PLATFORM_NAMES.map((p) => ({ value: p, label: p }))}
-          />
-          <Select
             placeholder="词根"
             allowClear
             onChange={setWordRootFilter}
@@ -133,18 +133,26 @@ function Recommend() {
         </div>
       </div>
 
+      {/* 平台筛选 Tabs */}
+      <Tabs
+        activeKey={platformFilter || 'all'}
+        onChange={(key) => setPlatformFilter(key === 'all' ? null : key)}
+        items={platformTabs.map(t => ({ key: t.key, label: t.label }))}
+        style={{ marginBottom: 16 }}
+      />
+
       <Spin spinning={loading}>
         {data ? (
           <>
             {/* Relevance Cards — prominently displayed */}
             {filteredCards.length > 0 && (
-              <div style={{ marginBottom: 32 }}>
+              <div style={{ marginBottom: 24 }}>
                 <h3 className="chart-title">关联度总览</h3>
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 16,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: 12,
                   }}
                 >
                   {filteredCards.map((card, i) => (

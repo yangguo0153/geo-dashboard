@@ -12,8 +12,7 @@ export function calcRelevance(productFit, naturalRate) {
 export function relevanceToTier(relevance) {
   if (relevance <= 30) return "一级";
   if (relevance <= 50) return "二级";
-  if (relevance <= 60) return "三级";
-  return "三级"; // >60% 仍归三级
+  return "三级";
 }
 
 /**

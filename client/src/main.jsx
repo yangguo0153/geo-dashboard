@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
@@ -12,10 +12,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ConfigProvider
         locale={zhCN}
         theme={{
-          algorithm: theme.darkAlgorithm,
           token: {
-            colorPrimary: "#00d4ff",
+            colorPrimary: "#2563eb",
             borderRadius: 8,
+            colorSuccess: "#16a34a",
+            colorWarning: "#d97706",
+            colorError: "#dc2626",
           },
         }}
       >
