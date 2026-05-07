@@ -6,3 +6,7 @@ data/*.db-wal
 client/dist/
 .env
 .DS_Store
+.codex/
+progress.md
+task_plan.md
+dist-package/
